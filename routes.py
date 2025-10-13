@@ -97,4 +97,10 @@ async def ativar_raspagem(usuario: Usuario = Depends(verificar_token)):
         raise HTTPException(status_code=403, detail="Apenas administradores podem ativar o scraping")
       return {"mensagem": "Scraping iniciado com sucesso"}
 
-           
+@router_books.get("/books/{id}", response_model=livrosSchema)     
+async def busca_livro_id(id):
+        """Essa é a rota responsável por pesquisar um livro por ID."""
+        book = session.query(Book).filter(Book.id == id).first()
+        if not book:
+            raise HTTPException(status_code=404, detail="O ID especificado não existe!")
+        return book
