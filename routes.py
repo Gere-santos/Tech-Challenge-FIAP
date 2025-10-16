@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
 from models import Book, Usuario
 from sqlalchemy.orm import Session
 from datetime import datetime, timedelta, timezone
@@ -9,6 +9,7 @@ from schemas_ import livrosSchema, UsuarioSchema, LoginSchema
 from dependency import pegar_sessao, verificar_token
 from main import bcrypt_context,  ACCESS_TOKEN_EXPIRE_MINUTES, SECRET_KEY, ALGORITHM
 from jose import jwt, JWTError
+from typing import Optional
 router_books = APIRouter(prefix="/api/v1", tags=["Tech Challenge FIAP"])
 
 session = SessionLocal()
@@ -97,6 +98,28 @@ async def ativar_raspagem(usuario: Usuario = Depends(verificar_token)):
         raise HTTPException(status_code=403, detail="Apenas administradores podem ativar o scraping")
       return {"mensagem": "Scraping iniciado com sucesso"}
 
+
+@router_books.get("/books/search", response_model=livrosSchema)
+async def busca_livro_categoria_titulo(
+    title: Optional[str] = Query(None, description="Título do livro"),
+    category: Optional[str] = Query(None, description="Categoria do livro")
+):
+    """Essa é a rota responsável por pesquisar um livro por título e categoria."""
+    query = session.query(Book)
+
+    if title:
+        query = query.filter(Book.title.like(f"%{title}%"))
+    if category:
+        query = query.filter(Book.category.like(f"%{category}%"))
+
+    book = query.first()
+
+    if not book:
+        raise HTTPException(status_code=404, detail="O livro pesquisado não existe!")
+
+    return book
+
+
 @router_books.get("/books/{id}", response_model=livrosSchema)     
 async def busca_livro_id(id):
         """Essa é a rota responsável por pesquisar um livro por ID."""
@@ -104,3 +127,5 @@ async def busca_livro_id(id):
         if not book:
             raise HTTPException(status_code=404, detail="O ID especificado não existe!")
         return book
+
+
