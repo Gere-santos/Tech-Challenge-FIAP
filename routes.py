@@ -129,3 +129,8 @@ async def busca_livro_id(id):
         return book
 
 
+@router_books.get("/categories", response_model=list[str])
+async def livros_categoria():
+    """Essa é a rota responsável por listar as categorias de livros disponíveis"""
+    categories = session.query(Book.category).distinct().order_by(Book.category).all()
+    return [c[0] for c in categories]
