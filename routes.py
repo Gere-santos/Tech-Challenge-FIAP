@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, Query
 from models import Book, Usuario
 from sqlalchemy.orm import Session
+from sqlalchemy import text
 from datetime import datetime, timedelta, timezone
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from db import SessionLocal, engine
@@ -134,3 +135,20 @@ async def livros_categoria():
     """Essa é a rota responsável por listar as categorias de livros disponíveis"""
     categories = session.query(Book.category).distinct().order_by(Book.category).all()
     return [c[0] for c in categories]
+
+@router_books.get("/health")
+async def health_check():
+    """
+    Rota de verificação de status da API e conectividade com o banco de dados.
+    """
+    try:
+        # Testa conexão com o banco
+        session.execute(text("SELECT 1"))
+        db_status = "connected"
+    except Exception as e:
+        db_status = f"error: {str(e)}"
+
+    return {
+        "api_status": "ok",
+        "database_status": db_status
+    }
