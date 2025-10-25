@@ -1,9 +1,9 @@
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, BackgroundTasks, status
 from models import Book, Usuario
 from sqlalchemy.orm import Session
 from sqlalchemy import text
 from datetime import datetime, timedelta, timezone
-from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
+from fastapi.security import OAuth2PasswordRequestForm
 from db import SessionLocal, engine
 from models import Book
 from schemas_ import livrosSchema, UsuarioSchema, LoginSchema
@@ -11,6 +11,9 @@ from dependency import pegar_sessao, verificar_token
 from main import bcrypt_context,  ACCESS_TOKEN_EXPIRE_MINUTES, SECRET_KEY, ALGORITHM
 from jose import jwt, JWTError
 from typing import Optional
+from scripts.scrapping import run_scraping
+
+
 router_books = APIRouter(prefix="/api/v1", tags=["Tech Challenge FIAP"])
 
 session = SessionLocal()
@@ -92,12 +95,28 @@ async def use_refresh_token(usuario: Usuario = Depends(verificar_token)):
             "access_token": access_token,
             "token_type": "Bearer" 
             }
-@router_books.get("/scraping/trigger")
-async def ativar_raspagem(usuario: Usuario = Depends(verificar_token)):
-      """Essa é a rota responsável por ativar o WebScapring que alimenta a API. Acesso exclusivo para administradores."""   
-      if not usuario.admin:
-        raise HTTPException(status_code=403, detail="Apenas administradores podem ativar o scraping")
-      return {"mensagem": "Scraping iniciado com sucesso"}
+
+
+@router_books.post("/scraping/trigger")
+async def ativar_raspagem(background_tasks: BackgroundTasks, usuario: Usuario = Depends(verificar_token)):
+    """
+    Rota responsável por ativar o WebScraping que alimenta a API.
+    Acesso exclusivo para administradores.
+    """
+    if not usuario.admin:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Apenas administradores podem ativar o scraping"
+        )
+
+  
+    background_tasks.add_task(run_scraping)
+
+    return {
+        "mensagem": "Scraping iniciado com sucesso. O processo está rodando em background.",
+        "status": "executando"
+    }
+
 
 
 @router_books.get("/books/search", response_model=livrosSchema)
@@ -109,9 +128,9 @@ async def busca_livro_categoria_titulo(
     query = session.query(Book)
 
     if title:
-        query = query.filter(Book.title.like(f"%{title}%"))
+        query = query.filter(Book.title.ilike(f"%{title}%"))
     if category:
-        query = query.filter(Book.category.like(f"%{category}%"))
+        query = query.filter(Book.category.ilike(f"%{category}%"))
 
     book = query.first()
 
