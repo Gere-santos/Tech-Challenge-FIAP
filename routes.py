@@ -4,12 +4,12 @@ from sqlalchemy.orm import Session
 from sqlalchemy import text
 from datetime import datetime, timedelta, timezone
 from fastapi.security import OAuth2PasswordRequestForm
-from db import SessionLocal, engine
+from db import SessionLocal
 from models import Book
 from schemas_ import livrosSchema, UsuarioSchema, LoginSchema
 from dependency import pegar_sessao, verificar_token
 from main import bcrypt_context,  ACCESS_TOKEN_EXPIRE_MINUTES, SECRET_KEY, ALGORITHM
-from jose import jwt, JWTError
+from jose import jwt
 from typing import Optional
 from scripts.scrapping import run_scraping
 
@@ -20,7 +20,7 @@ session = SessionLocal()
 
     
 
-#session.close()
+
 
 @router_books.get("/lista", response_model=list[livrosSchema])
 async def livros():

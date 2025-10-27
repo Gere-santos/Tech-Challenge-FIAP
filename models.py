@@ -1,6 +1,6 @@
 from sqlalchemy import Column, String, Float, Integer, create_engine, Boolean, Float, ForeignKey
 from db import Base
-from sqlalchemy.orm import declarative_base, relationship
+from sqlalchemy.orm import declarative_base
 
 db_user = create_engine("sqlite:///banco.db")
 Base_user = declarative_base()
