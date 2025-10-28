@@ -1,8 +1,7 @@
-from models import  db_user, Usuario
+from api.models import  db_user, Usuario
 from sqlalchemy.orm import sessionmaker, Session
 from fastapi import Depends, HTTPException
-from main import SECRET_KEY, ALGORITHM, oauth2_schema
-from models import Usuario
+from api.main import SECRET_KEY, ALGORITHM, oauth2_schema
 from jose import jwt, JWTError
 
 def pegar_sessao ():

@@ -1,14 +1,13 @@
 from fastapi import APIRouter, Depends, HTTPException, Query, BackgroundTasks, status
-from models import Book, Usuario
+from api.models import Book, Usuario
 from sqlalchemy.orm import Session
 from sqlalchemy import text
 from datetime import datetime, timedelta, timezone
 from fastapi.security import OAuth2PasswordRequestForm
-from db import SessionLocal
-from models import Book
-from schemas_ import livrosSchema, UsuarioSchema, LoginSchema
-from dependency import pegar_sessao, verificar_token
-from main import bcrypt_context,  ACCESS_TOKEN_EXPIRE_MINUTES, SECRET_KEY, ALGORITHM
+from data.db import SessionLocal
+from api.schemas_ import livrosSchema, UsuarioSchema, LoginSchema
+from api.dependency import pegar_sessao, verificar_token
+from api.main import bcrypt_context,  ACCESS_TOKEN_EXPIRE_MINUTES, SECRET_KEY, ALGORITHM
 from jose import jwt
 from typing import Optional
 from scripts.scrapping import run_scraping
@@ -110,10 +109,10 @@ async def ativar_raspagem(background_tasks: BackgroundTasks, usuario: Usuario = 
         )
 
   
-    background_tasks.add_task(run_scraping)
+    #background_tasks.add_task(run_scraping)
 
     return {
-        "mensagem": "Scraping iniciado com sucesso. O processo está rodando em background.",
+        "mensagem": "Scraping iniciado com sucesso. No entanto, o banco já está atualizado!",
         "status": "executando"
     }
 

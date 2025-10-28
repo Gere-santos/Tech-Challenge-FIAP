@@ -1,8 +1,8 @@
 from sqlalchemy import Column, String, Float, Integer, create_engine, Boolean, Float, ForeignKey
-from db import Base
+from data.db import Base
 from sqlalchemy.orm import declarative_base
 
-db_user = create_engine("sqlite:///banco.db")
+db_user = create_engine("sqlite:///data/banco.db")
 Base_user = declarative_base()
 
 class Book(Base):
