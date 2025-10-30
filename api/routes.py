@@ -4,7 +4,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy import text
 from datetime import datetime, timedelta, timezone
 from fastapi.security import OAuth2PasswordRequestForm
-from data.db import SessionLocal
+from data.db import SessionLocal, get_db
 from api.schemas_ import livrosSchema, UsuarioSchema, LoginSchema
 from api.dependency import pegar_sessao, verificar_token
 from api.main import bcrypt_context,  ACCESS_TOKEN_EXPIRE_MINUTES, SECRET_KEY, ALGORITHM
@@ -15,14 +15,14 @@ from scripts.scrapping import run_scraping
 
 router_books = APIRouter(prefix="/api/v1", tags=["Tech Challenge FIAP"])
 
-session = SessionLocal()
+
 
     
 
 
 
 @router_books.get("/lista", response_model=list[livrosSchema])
-async def livros():
+async def livros(session : Session = Depends(get_db)):
     """Essa é a rota responsável por listar todos os livros disponíveis."""
     books = session.query(Book).filter(Book.id.isnot(None)).order_by(Book.id).all()
     return books
@@ -97,7 +97,7 @@ async def use_refresh_token(usuario: Usuario = Depends(verificar_token)):
 
 
 @router_books.post("/scraping/trigger")
-async def ativar_raspagem(background_tasks: BackgroundTasks, usuario: Usuario = Depends(verificar_token)):
+async def ativar_raspagem(background_tasks: BackgroundTasks, usuario: Usuario = Depends(verificar_token), session: Session = Depends(pegar_sessao)):
     """
     Rota responsável por ativar o WebScraping que alimenta a API.
     Acesso exclusivo para administradores.
@@ -121,7 +121,8 @@ async def ativar_raspagem(background_tasks: BackgroundTasks, usuario: Usuario = 
 @router_books.get("/books/search", response_model=livrosSchema)
 async def busca_livro_categoria_titulo(
     title: Optional[str] = Query(None, description="Título do livro"),
-    category: Optional[str] = Query(None, description="Categoria do livro")
+    category: Optional[str] = Query(None, description="Categoria do livro"),
+    session : Session = Depends(get_db)
 ):
     """Essa é a rota responsável por pesquisar um livro por título e categoria."""
     query = session.query(Book)
@@ -140,7 +141,7 @@ async def busca_livro_categoria_titulo(
 
 
 @router_books.get("/books/{id}", response_model=livrosSchema)     
-async def busca_livro_id(id):
+async def busca_livro_id(id, session : Session = Depends(get_db)):
         """Essa é a rota responsável por pesquisar um livro por ID."""
         book = session.query(Book).filter(Book.id == id).first()
         if not book:
@@ -149,13 +150,13 @@ async def busca_livro_id(id):
 
 
 @router_books.get("/categories", response_model=list[str])
-async def livros_categoria():
+async def livros_categoria(session : Session = Depends(get_db)):
     """Essa é a rota responsável por listar as categorias de livros disponíveis"""
     categories = session.query(Book.category).distinct().order_by(Book.category).all()
     return [c[0] for c in categories]
 
 @router_books.get("/health")
-async def health_check():
+async def health_check(session : Session = Depends(get_db)):
     """
     Rota de verificação de status da API e conectividade com o banco de dados.
     """
