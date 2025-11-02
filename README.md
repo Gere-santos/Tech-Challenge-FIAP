@@ -214,6 +214,10 @@ curl -X GET "https://fase1-v2.onrender.com/api/v1/books/search?title=Attic"
 }
 ```
 
+## Plano Arquitetural
+
+Para mais detalhes sobre a arquitetura do projeto, consulte o [Plano Arquitetural](ARCHITECTURE.md).
+
 ## Instruções para Execução
 
 ### Executando a API
