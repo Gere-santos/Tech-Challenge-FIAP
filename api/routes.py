@@ -15,7 +15,7 @@ from scripts.scrapping import run_scraping
 
 router_books = APIRouter(prefix="/api/v1", tags=["Tech Challenge FIAP"])
 
-
+session = SessionLocal()
 
     
 
@@ -97,7 +97,7 @@ async def use_refresh_token(usuario: Usuario = Depends(verificar_token)):
 
 
 @router_books.post("/scraping/trigger")
-async def ativar_raspagem(background_tasks: BackgroundTasks, usuario: Usuario = Depends(verificar_token), session: Session = Depends(pegar_sessao)):
+async def ativar_raspagem(background_tasks: BackgroundTasks, usuario: Usuario = Depends(verificar_token)):
     """
     Rota responsável por ativar o WebScraping que alimenta a API.
     Acesso exclusivo para administradores.
@@ -141,7 +141,7 @@ async def busca_livro_categoria_titulo(
 
 
 @router_books.get("/books/{id}", response_model=livrosSchema)     
-async def busca_livro_id(id, session : Session = Depends(get_db)):
+async def busca_livro_id(id):
         """Essa é a rota responsável por pesquisar um livro por ID."""
         book = session.query(Book).filter(Book.id == id).first()
         if not book:

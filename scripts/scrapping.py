@@ -17,10 +17,13 @@ INDEX_URL = "https://books.toscrape.com/index.html"
 BASE_URL = "https://books.toscrape.com/"
 
 dotenv.load_dotenv()
+USER = os.getenv("user")
+PASSWORD = os.getenv("password")
+HOST = os.getenv("host")
+PORT = os.getenv("port")
+DBNAME = os.getenv("dbname")
 
-db_url = str(os.getenv("DB_URL"))
-
-
+db_url = f"postgresql+psycopg2://{USER}:{PASSWORD}@{HOST}:{PORT}/{DBNAME}?sslmode=require"
 # %%
 
 engine = create_engine(db_url)

@@ -12,14 +12,15 @@ HOST = os.getenv("host")
 PORT = os.getenv("port")
 DBNAME = os.getenv("dbname")
 
-encoded_password = quote_plus(PASSWORD)
+db_url = f"postgresql+psycopg2://{USER}:{PASSWORD}@{HOST}:{PORT}/{DBNAME}?sslmode=require"
 
-db_url = f"postgresql+psycopg2://{USER}:{encoded_password}@{HOST}:{PORT}/{DBNAME}?sslmode=require"
-
-
-
-
-engine = create_engine(db_url)
+engine = create_engine(
+    db_url,
+    pool_pre_ping=True,      
+    pool_recycle=300,       
+    pool_size=5,             
+    max_overflow=10,         
+)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
 
